@@ -33,7 +33,7 @@ CONFIGURATION
 
     Edit the crontab if you'd like to change this frequency.
 
-    The install script will create an empty file in `$HOME/.emprimt` called `printers'. In
+    The install script will create an empty file in `$HOME/.emprimt' called `printers'. In
     this file, list the names of the printers that emprimt can print to, one per line.
     For a list of qualified printer names, run
 
@@ -82,4 +82,4 @@ FILES
         The filter file for maildrop.
 
     - `$HOME/.emprimt/primtbox/cache/<printer_name>'
-        Temporary directory for extracted attachments while they're being printed.
+        The temporary directory for extracted attachments while they're being printed.
