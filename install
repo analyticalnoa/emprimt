@@ -1,21 +1,18 @@
 #!/bin/bash
 
 user=emprimt
-# etc=/etc/emprimt
 bin=/usr/bin
 doc=/usr/share/doc/emprimt
 interval="05 * * * *"
 enable=false
-fetchmailrc=./fetchmailrc
 force=false
 
 __doc__=(
   "must be run as superuser."
   "usage: ./install -h"
-  "       ./install [ --user <emprimt_user> (default \`$user\')"
+  "       ./install [ --user <emprimt_user> (default \`$user')"
   "                   --enable (i.e. install cron; default false)"
-  "                   --interval <cron_spec> (default \`$interval\')"
-  "                   --fetchmailrc <fetchmailrc> (default \`$fetchmailrc\')"
+  "                   --interval <cron_spec> (default \`$interval')"
   "                   --force (i.e. force re-install config) ]"
 )
 
@@ -39,10 +36,6 @@ while [ "$#" -gt 0 ]; do
       enable=true
       shift 1
       ;;
-    --fetchmailrc)
-      fetchmailrc="$2"
-      shift 2
-      ;;
     --force)
       force=true
       shift 1
@@ -59,6 +52,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
+config="$HOME/.emprimt"
 
 setup_user() {
   adduser "$user"
@@ -66,20 +60,18 @@ setup_user() {
 }
 
 configure() {
-  cp -v "$fetchmailrc" "$HOME/.fetchmailrc"
-  chown "$user" "$HOME/.fetchmailrc"
-  chmod 600 "$HOME/.fetchmailrc"
-
   [ ! -d "$HOME/primtbox" ] && sudo -u "$user" maildirmake "$HOME/primtbox"
 
   cp -v ./mailfilter "$HOME/.mailfilter"
-  chown "$user" "$HOME/.mailfilter"
-  chmod 600 "$HOME/.mailfilter"
+  chown -v "$user" "$HOME/.mailfilter"
+  chmod -v 600 "$HOME/.mailfilter"
+
+  touch "$config/printers"
 }
 
 [[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
 
-mkdir -v --parents "$doc"
+mkdir -v --parents "$doc" "$config"
 cp -v ./doc "$doc/doc"
 
 if [ ! -f "$fetchmailrc" ] || [ "$force" == "true" ]; then configure; fi

@@ -1,3 +1,32 @@
 #!/bin/bash
 
+mailbox="$HOME/primtbox"
+config="$HOME/.emprimt"
+
+if [[ "$1" == "-h" ]]; then less /usr/share/doc/emprimt/doc; exit; fi
+
+main() {
+  while IFS="" read -r printer; do
+    [[ $( lpstat -p -d | awk '$1=="printer" {print $2}' | grep -c "$printer" ) -eq 0 ]] \
+      && continue
+
+    mkdir --parents "$mailbox/.$printer/cache"
+
+    for f in $mailbox/new/*; do
+      [ ! -f "$f" ] && continue
+      [[ $( grep -ce "^Subject:.*$printer.*$" ) -ne 0 ]] \
+        && munpack -C "$mailbox/.$printer/cache" "$f"
+    done
+
+    for f in $mailbox/.$printer/cache/*; do
+      [ ! -f "$f" ] && continue
+      lpr -P "$printer" "$f"
+    done
+
+    rm -r "$mailbox/.$printer/cache"
+  done <"$config/printers"
+}
+
 fetchmail
+
+main
