@@ -14,7 +14,7 @@ main() {
 
     for f in $mailbox/new/*; do
       [ ! -f "$f" ] && continue
-      [[ $( grep -ce "^Subject:.*$printer.*$" ) -ne 0 ]] \
+      [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]] \
         && munpack -C "$mailbox/.$printer/cache" "$f"
     done
 
