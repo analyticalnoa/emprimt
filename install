@@ -1,0 +1,77 @@
+#!/bin/bash
+
+user=emprimt
+# etc=/etc/emprimt
+bin=/usr/bin
+doc=/usr/share/doc/emprimt
+interval="05 * * * *"
+enable=false
+fetchmailrc=./fetchmailrc
+force=false
+
+__doc__=(
+  ""
+  "usage: ./install -h"
+  "       ./install [ --user <emprimt_user> (default \`$user\')"
+  "                   --enable (i.e. install cron; default false)"
+  "                   --interval <cron_spec> (default \`$interval\')"
+  "                   --fetchmailrc <fetchmailrc> (default \`$fetchmailrc\')"
+  "                   --force (i.e. force re-install config) ]"
+  "must be run as superuser."
+)
+
+show_doc() {
+  printf "%s\n" "${__doc__[@]}" > /dev/stderr
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --user)
+      user="$2"
+      shift 2
+      ;;
+    --interval)
+      interval="$2"
+      shift 2
+      ;;
+    --enable)
+      enable=true
+      shift 1
+      ;;
+    --fetchmailrc)
+      fetchmailrc="$2"
+      shift 2
+      ;;
+    --force)
+      force=true
+      shift 1
+    -h)
+      show_doc
+      exit 1
+    *)
+      show_doc
+      exit 1
+  esac
+done
+
+HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
+
+setup_user() {
+  adduser "$user"
+  [[ "$enable" == "true" ]] && crontab -u "$user" - <<< "$interval" emprimt
+}
+
+configure() {
+  cp -v "$fetchmailrc" "$HOME/.fetchmailrc"
+  chown "$user" "$HOME/.fetchmailrc"
+  chmod 700 "$HOME/.fetchmailrc"
+}
+
+[[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
+
+mkdir -v --parents "$doc"
+cp -v ./doc "$doc/doc"
+
+if [ ! -d "$etc" ] || [ "$force" == "true" ]; then configure; fi
+
+install -vt "$bin" ./emprimt
