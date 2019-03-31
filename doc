@@ -2,7 +2,7 @@ NAME
     emprimt - a simple email-to-print service.
 
 SYNOPSIS
-    emprimt -h|--help|help
+    emprimt -h
     emprimt
 
 CONFIGURATION
@@ -56,7 +56,8 @@ DESCRIPTION
     emprimt prints any PDF documents attached to mail with a subject line that contains
     a qualified printer name(s) appearing in the `$HOME/.emprimt/printers' file. The
     attachment(s) will be printed to the subject-line-specified printer appearing first
-    on the printers list. Documents will be printed with the default printing options set by CUPS.
+    on the printers list. Documents will be printed with the default printing options set
+    by CUPS.
 
 DEPENDENCIES
     emprimt requires the following packages, available via your distribution's package
