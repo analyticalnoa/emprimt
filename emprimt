@@ -16,8 +16,8 @@ main() {
     for f in $mailbox/new/*; do
       [ ! -f "$f" ] && continue
       [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]] \
-        && munpack -C "$cache" "$f"
-      rm "$f"
+        && munpack -C "$cache" "$f" \
+        && rm "$f"
     done
 
     for f in $cache/*; do
@@ -27,6 +27,8 @@ main() {
 
     rm -r "$cache"
   done <"$config/printers"
+
+  rm $mailbox/new/*
 }
 
 fetchmail
