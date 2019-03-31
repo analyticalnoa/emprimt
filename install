@@ -73,7 +73,7 @@ configure() {
 
 setup_paths
 
-if [ ! -d "$config" ] || [ "$force" == "true" ]; then configure; fi
+if [ ! -f "$HOME/.mailfilter" ] || [ "$force" == "true" ]; then configure; fi
 
 cp -v ./doc "$doc/doc"
 install -vt "$bin" ./emprimt
