@@ -1,3 +1,83 @@
-REQUIRES
-    fetchmail
-    maildrop
+NAME
+    emprimt - a simple email-to-print service.
+
+SYNOPSIS
+    emprimt -h|--help|help
+    emprimt
+
+CONFIGURATION
+    First see DEPENDENCIES.
+
+    `$HOME' refers to the emprimt user's home directory, not just any home; see below.
+
+    emprimt provides all the machinery for email-to-print once mails have been delivered
+    from a dedicated email address to `$HOME/.emprimt/primtbox'; you'll just need to setup
+    an MDA (we recommend `fetchmail') to do this. To setup your MDA with emprimt, pipe messages to `maildrop'. In fetchmail, this is done by placing
+
+        mda "maildrop"
+
+    in the `fetchmailrc' file. We've included a sample `fetchmailrc' file
+    (`./sample_fetchmailrc') for connecting a hypothetical gmail account; see the
+    fetchmail manpage for more information.
+
+    As superuser, run
+
+        ./install
+
+    to setup emprimt without automating it with cron. You'll be prompted to create a
+    password for the new dedicated emprimt system user. If you want to install a
+    crontab for emprimt to run every five minutes, run
+
+        ./install --enable
+
+    Edit the crontab if you'd like to change this frequency.
+
+    The install script will create an empty file in `$HOME/.emprimt` called `printers'. In
+    this file, list the names of the printers that emprimt can print to, one per line.
+    For a list of qualified printer names, run
+
+        lpstat -p -d
+
+    Beyond that, feel free to tweak the `$HOME/.mailfilter' file to further control which
+    emails get through to emprimt; see the maildroprc manpage for details.
+
+    IMPORTANT: Realize that you should handle file-size limits with your MDA, as the mail
+    has already been written to disk by the time emprimt sees it. In fetchmail, we
+    recommend placing
+
+        limit 20000000
+
+    in your `fetchmailrc' file to only deliver mail of size 20 MiB and under.
+
+DESCRIPTION
+    To use emprimt, simply run `emprimt' from the command line, as the emprimt user.
+
+    emprimt prints any PDF documents attached to mail with a subject line that contains
+    a qualified printer name(s) appearing in the `$HOME/.emprimt/printers' file. The
+    attachment(s) will be printed to the subject-line-specified printer appearing first
+    on the printers list. Documents will be printed with the default printing options set by CUPS.
+
+DEPENDENCIES
+    emprimt requires the following packages, available via your distribution's package
+    manager. It will also need an MDA to deliver mails to `maildrop'; we recommend
+    `fetchmail'.
+
+      - `crontab'
+      - `cups'
+      - `maildrop'
+
+FILES
+    - `$HOME'
+        The home directory of the emprimt system user.
+
+    - `$HOME/.emprimt/primtbox'
+        Where mails are kept until sorted and perhaps printed by emprimt.
+
+    - `$HOME/.emprimt/printers'
+        A new-line delimited list of qualified printer names to be usable by emprimt.
+
+    - `$HOME/.mailfilter'
+        The filter file for maildrop.
+
+    - `$HOME/.emprimt/primtbox/cache/<printer_name>'
+        Temporary directory for extracted attachments while they're being printed.

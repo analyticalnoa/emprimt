@@ -51,7 +51,7 @@ config="$HOME/.emprimt"
 mailbox="$config/primtbox"
 
 setup_user() {
-  adduser "$user"
+  adduser --system "$user"
   [[ "$enable" == "true" ]] && crontab -u "$user" - <<< "$interval" emprimt
 }
 
