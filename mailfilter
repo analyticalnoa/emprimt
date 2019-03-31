@@ -1,0 +1,7 @@
+DEFAULT="$HOME/primtbox"
+
+if (/^Content-Type: application/pdf.*$/) {
+  to $DEFAULT
+} else {
+  exit
+}

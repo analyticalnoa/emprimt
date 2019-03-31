@@ -69,6 +69,12 @@ configure() {
   cp -v "$fetchmailrc" "$HOME/.fetchmailrc"
   chown "$user" "$HOME/.fetchmailrc"
   chmod 600 "$HOME/.fetchmailrc"
+
+  maildirmake primtbox
+
+  cp -v ./mailfilter "$HOME/.mailfilter"
+  chown "$user" "$HOME/.mailfilter"
+  chmod 600 "$HOME/.mailfilter"
 }
 
 [[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
