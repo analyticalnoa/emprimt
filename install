@@ -45,12 +45,15 @@ while [ "$#" -gt 0 ]; do
     --force)
       force=true
       shift 1
+      ;;
     -h)
       show_doc
       exit 1
+      ;;
     *)
       show_doc
       exit 1
+      ;;
   esac
 done
 
