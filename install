@@ -76,6 +76,6 @@ configure() {
 mkdir -v --parents "$doc"
 cp -v ./doc "$doc/doc"
 
-if [ ! -d "$etc" ] || [ "$force" == "true" ]; then configure; fi
+if [ ! -f "$fetchmailrc" ] || [ "$force" == "true" ]; then configure; fi
 
 install -vt "$bin" ./emprimt
