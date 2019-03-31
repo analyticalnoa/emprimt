@@ -56,7 +56,8 @@ setup_user() {
 }
 
 setup_paths() {
-  mkdir -v --parents "$doc" "$config"
+  mkdir -v --parents "$doc"
+  sudo -u "$user" mkdir -v --parents "$config"
   [ ! -d "$mailbox" ] && sudo -u "$user" maildirmake "$mailbox"
 }
 
