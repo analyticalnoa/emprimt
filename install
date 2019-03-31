@@ -10,19 +10,20 @@ fetchmailrc=./fetchmailrc
 force=false
 
 __doc__=(
-  ""
+  "must be run as superuser."
   "usage: ./install -h"
   "       ./install [ --user <emprimt_user> (default \`$user\')"
   "                   --enable (i.e. install cron; default false)"
   "                   --interval <cron_spec> (default \`$interval\')"
   "                   --fetchmailrc <fetchmailrc> (default \`$fetchmailrc\')"
   "                   --force (i.e. force re-install config) ]"
-  "must be run as superuser."
 )
 
 show_doc() {
   printf "%s\n" "${__doc__[@]}" > /dev/stderr
 }
+
+if [[ "$USER" != "root" ]]; then show_doc; exit; fi
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
