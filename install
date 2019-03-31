@@ -64,7 +64,7 @@ setup_user() {
 configure() {
   cp -v "$fetchmailrc" "$HOME/.fetchmailrc"
   chown "$user" "$HOME/.fetchmailrc"
-  chmod 700 "$HOME/.fetchmailrc"
+  chmod 600 "$HOME/.fetchmailrc"
 }
 
 [[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
