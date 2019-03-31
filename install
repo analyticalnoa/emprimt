@@ -70,7 +70,7 @@ configure() {
   chown "$user" "$HOME/.fetchmailrc"
   chmod 600 "$HOME/.fetchmailrc"
 
-  sudo -u "$user" maildirmake "$HOME/primtbox"
+  [ ! -d "$HOME/primtbox" ] && sudo -u "$user" maildirmake "$HOME/primtbox"
 
   cp -v ./mailfilter "$HOME/.mailfilter"
   chown "$user" "$HOME/.mailfilter"
