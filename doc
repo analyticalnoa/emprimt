@@ -12,7 +12,8 @@ CONFIGURATION
 
     emprimt provides all the machinery for email-to-print once mails have been delivered
     from a dedicated email address to `$HOME/.emprimt/primtbox'; you'll just need to setup
-    an MDA (we recommend `fetchmail') to do this. To setup your MDA with emprimt, pipe messages to `maildrop'. In fetchmail, this is done by placing
+    an MDA (we recommend `fetchmail') to do this. To setup your MDA with emprimt, pipe
+    messages to `maildrop'. In fetchmail, this is done by placing
 
         mda "maildrop"
 
