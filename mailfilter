@@ -1,8 +1,6 @@
-DEFAULT="$HOME/primtbox"
-
 if (/^Content\-Type: application\/pdf.*$/)
 {
-  to "$DEFAULT"
+  to "$HOME/.emprimt/primtbox"
 }
 else
 {

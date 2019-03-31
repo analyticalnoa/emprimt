@@ -12,8 +12,7 @@ __doc__=(
   "usage: ./install -h"
   "       ./install [ --user <emprimt_user> (default \`$user')"
   "                   --enable (i.e. install cron; default false)"
-  "                   --interval <cron_spec> (default \`$interval')"
-  "                   --force (i.e. force re-install config) ]"
+  "                   --force (i.e. force re-install configs) ]"
 )
 
 show_doc() {
@@ -26,10 +25,6 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --user)
       user="$2"
-      shift 2
-      ;;
-    --interval)
-      interval="$2"
       shift 2
       ;;
     --enable)
@@ -53,15 +48,19 @@ done
 
 HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
 config="$HOME/.emprimt"
+mailbox="$config/primtbox"
 
 setup_user() {
   adduser "$user"
   [[ "$enable" == "true" ]] && crontab -u "$user" - <<< "$interval" emprimt
 }
 
-configure() {
-  [ ! -d "$HOME/primtbox" ] && sudo -u "$user" maildirmake "$HOME/primtbox"
+setup_paths() {
+  [ ! -d "$mailbox" ] && sudo -u "$user" maildirmake "$mailbox"
+  mkdir -v --parents "$doc" "$config"
+}
 
+configure() {
   cp -v ./mailfilter "$HOME/.mailfilter"
   chown -v "$user" "$HOME/.mailfilter"
   chmod -v 600 "$HOME/.mailfilter"
@@ -71,9 +70,9 @@ configure() {
 
 [[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
 
-mkdir -v --parents "$doc" "$config"
+setup_paths
+
+if [ ! -d "$config" ] || [ "$force" == "true" ]; then configure; fi
+
 cp -v ./doc "$doc/doc"
-
-if [ ! -f "$fetchmailrc" ] || [ "$force" == "true" ]; then configure; fi
-
 install -vt "$bin" ./emprimt
