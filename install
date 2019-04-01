@@ -111,12 +111,12 @@ echo "Done."
 
 # enable in crontab
 # ----------------------------------------------------------------------------------------
-echo "Installing crontab..."
-[[ "$enable" == true ]] && [[ $( crontab -u "$user" -l | grep -c emprimt ) -eq 0 ]] \
-  && crontab -u "$user" - <<< "$interval emprimt" \
-  || except "Error installing crontab."
-echo "Done."
+if [[ "$enable" == true ]] \
+    && [[ $( crontab -u "$user" -l | grep -c emprimt ) -eq 0 ]]; then
+  echo "Installing crontab..."
+  crontab -u "$user" - <<< "$interval emprimt" || except "Error installing crontab."
+  echo "Done."
+fi
 # ----------------------------------------------------------------------------------------
-
 
 echo "Installation complete."
