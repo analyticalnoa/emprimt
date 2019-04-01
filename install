@@ -65,7 +65,7 @@ create_user() {
   passwd "$user"
 }
 
-[[ $( awk '{print $1}' /etc/passwd | grep -c /etc/passwd ) -eq 0 ]] && create_user
+[[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && create_user
 
 HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
 [ -d "$HOME" ] || except "Error with home directory."
