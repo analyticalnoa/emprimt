@@ -19,7 +19,7 @@ show_doc() {
   printf "%s\n" "${__doc__[@]}" > /dev/stderr
 }
 
-if [[ "$USER" != "root" ]]; then show_doc; exit; fi
+if [[ "$USER" != "root" ]]; then show_doc; exit 1; fi
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -37,16 +37,15 @@ while [ "$#" -gt 0 ]; do
       ;;
     -h)
       show_doc
-      exit 1
+      exit 0
       ;;
     *)
       show_doc
-      exit 1
+      exit 0
       ;;
   esac
 done
 
-HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
 config="$HOME/.emprimt"
 mailbox="$config/primtbox"
 
@@ -70,6 +69,8 @@ configure() {
 }
 
 [[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
+HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
+[ ! -d "$HOME" ] && exit 2
 
 setup_paths
 
