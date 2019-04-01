@@ -1,36 +1,64 @@
 #!/bin/bash
 
+if [[ "$1" == "-h" ]]; then less /usr/share/doc/emprimt/doc; exit; fi
+
 config="$HOME/.emprimt"
 mailbox="$config/primtbox"
 
-if [[ "$1" == "-h" ]]; then less /usr/share/doc/emprimt/doc; exit; fi
+# sanity checks
+# ----------------------------------------------------------------------------------------
+# fetchmailrc existnece and permissions
+[ ! -f "$HOME/.fetchmailrc" ] && exit 2
+[[ $( stat -c '%a' "$HOME/.fetchmailrc" ) -gt 700 ]] && exit 3
 
-main() {
-  while IFS="" read -r printer; do
-    [[ $( lpstat -p -d | awk '$1=="printer" {print $2}' | grep -c "$printer" ) -eq 0 ]] \
-      && continue
+# mailfilter existence and permissions
+[ ! -f "$HOME/.mailfilter" ] && exit 2
+[[ $( stat -c '%a' "$HOME/.mailfilter" ) -gt 700 ]] && exit 3
 
-    cache="$mailbox/cache/$printer"
-    mkdir --parents "$cache"
+# directory existence and permissions
+[ ! -d "$config" ] && exit 2
+[ ! -d "$mailbox" ] && exit 2
+[[ $( stat -c '%a' "$mailbox" ) -gt 700 ]] && exit 3
 
-    [[ $( ls -1 "$mailbox/new" | wc -l ) -gt 0 ]] && for f in $mailbox/new/*; do
-      [ ! -f "$f" ] && continue
-      [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]] \
-        && munpack -C "$cache" "$f" \
-        && rm "$f"
-    done
+# no printers to check
+[ ! $( wc -l .emprimt/priners | awk 'NR==1 {print $1}' ) -gt 0 ] && exit 1
 
-    [[ $( ls -1 "$cache" | wc -l ) -gt 0 ]] && for f in $cache/*; do
-      [ ! -f "$f" ] && continue
-      lpr -P "$printer" "$f"
-    done
+# nothing to print
+[[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]] && exit 0
+# ----------------------------------------------------------------------------------------
 
-    rm -r "$cache"
-  done <"$config/printers"
-
-  [[ $( ls -1 "$mailbox/new" | wc -l ) -gt 0 ]] && rm $mailbox/new/*
-}
-
+# fetchmail
+# ----------------------------------------------------------------------------------------
 fetchmail
+# ----------------------------------------------------------------------------------------
 
-main
+# main boi
+# ----------------------------------------------------------------------------------------
+while IFS="" read -r printer; do
+  # unqualified printer
+  [[ $( lpstat -p -d | awk '$1=="printer" {print $2}' | grep -c "$printer" ) -eq 0 ]] \
+    && continue
+
+  # create cache
+  cache="$mailbox/cache/$printer"
+  mkdir --parents "$cache"
+
+  for f in "$mailbox/new/"*; do
+    # verify path
+    f=$( readlink -f "$f" )
+    [[ "$f" =~ ^"$mailbox/new/".*$ ]] & exit 4
+
+    # extract document
+    [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]] \
+      && munpack -C "$cache" "$f" \
+      && rm "$f"
+  done
+
+  # clear cache
+  rm -r "$cache"
+done <"$config/printers"
+
+# clear unqualified messages
+[[ $( ls -1 "$mailbox/new" | wc -l ) -gt 0 ]] \
+  && rm "$mailbox/new/"*
+# ----------------------------------------------------------------------------------------
