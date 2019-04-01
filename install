@@ -5,7 +5,7 @@ echo
 user=emprimt
 
 bin=/usr/bin
-doc=/usr/share/doc/emrpimt
+doc=/usr/share/doc/emprimt
 
 enable=false
 interval="05 * * * *"
@@ -108,3 +108,5 @@ cp -v ./doc "$doc/doc" || except "Error installing doc."
 install -vt "$bin" ./emprimt || except "Error installing executable."
 echo "Done."
 # ----------------------------------------------------------------------------------------
+
+# enable in crontab
