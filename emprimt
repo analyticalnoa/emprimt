@@ -13,14 +13,14 @@ main() {
     cache="$mailbox/cache/$printer"
     mkdir --parents "$cache"
 
-    for f in $mailbox/new/*; do
+    [[ $( ls -1 "$mailbox/new" | wc -l ) -gt 0 ]] && for f in $mailbox/new/*; do
       [ ! -f "$f" ] && continue
       [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]] \
         && munpack -C "$cache" "$f" \
         && rm "$f"
     done
 
-    for f in $cache/*; do
+    [[ $( ls -1 "$cache" | wc -l ) -gt 0 ]] && for f in $cache/*; do
       [ ! -f "$f" ] && continue
       lpr -P "$printer" "$f"
     done
@@ -28,7 +28,7 @@ main() {
     rm -r "$cache"
   done <"$config/printers"
 
-  rm $mailbox/new/*
+  [[ $( ls -1 "$mailbox/new" | wc -l ) -gt 0 ]] && rm $mailbox/new/*
 }
 
 fetchmail
