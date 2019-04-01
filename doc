@@ -6,20 +6,23 @@ SYNOPSIS
     emprimt
 
 CONFIGURATION
-    First see DEPENDENCIES.
+    First see DEPENDENCIES. We assume you have already setup desired printers with CUPS.
 
-    `$HOME' refers to the emprimt user's home directory, not just any home; see below.
+    `$HOME' refers to the emprimt user's home directory, not just anyone's; see below.
 
-    emprimt provides all the machinery for email-to-print once mails have been delivered
-    from a dedicated email address to `$HOME/.emprimt/primtbox'; you'll just need to setup
-    an MDA (we recommend `fetchmail') to do this. To setup your MDA with emprimt, pipe
-    messages to `maildrop'. In fetchmail, this is done by placing
+    You'll need to configure fetchmail with your email address(s) to pipe messages to
+    maildrop, which will depend on your provider. We've included a `./sample_fetchmailrc',
+    which you should copy to `$HOME/.fetchmailrc' and modify as needed. Just ensure that
+    you send messages to maildrop by keeping the line
 
         mda "maildrop"
 
-    in the `fetchmailrc' file. We've included a sample `fetchmailrc' file
-    (`./sample_fetchmailrc') for connecting a hypothetical gmail account; see the
-    fetchmail manpage for more information.
+    IMPORTANT: Also filter messages by size so that you don't fill the disk. We've
+    included the line
+
+        limit 20000000
+
+    to only deliver mail of size 20 MiB and under.
 
     As superuser, run
 
@@ -42,14 +45,6 @@ CONFIGURATION
     Beyond that, feel free to tweak the `$HOME/.mailfilter' file to further control which
     emails get through to emprimt; see the maildroprc manpage for details.
 
-    IMPORTANT: Realize that you should handle file-size limits with your MDA, as the mail
-    has already been written to disk by the time emprimt sees it. In fetchmail, we
-    recommend placing
-
-        limit 20000000
-
-    in your `fetchmailrc' file to only deliver mail of size 20 MiB and under.
-
 DESCRIPTION
     To use emprimt, simply run `emprimt' from the command line, as the emprimt user.
 
@@ -61,11 +56,11 @@ DESCRIPTION
 
 DEPENDENCIES
     emprimt requires the following packages, available via your distribution's package
-    manager. It will also need an MDA to deliver mails to `maildrop'; we recommend
-    `fetchmail'.
+    manager.
 
       - `crontab'
       - `cups'
+      - `fetchmail'
       - `maildrop'
 
 FILES
@@ -77,6 +72,9 @@ FILES
 
     - `$HOME/.emprimt/printers'
         A new-line delimited list of qualified printer names to be usable by emprimt.
+
+    - `$HOME/.fetchmailrc'
+        The run control for fetchmail.
 
     - `$HOME/.mailfilter'
         The filter file for maildrop.
