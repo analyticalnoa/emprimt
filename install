@@ -1,11 +1,25 @@
 #!/bin/bash
 
 user=emprimt
+
 bin=/usr/bin
-doc=/usr/share/doc/emprimt
-interval="05 * * * *"
+doc=/usr/share/doc/emrpimt
+
 enable=false
+interval="05 * * * *"
+
 force=false
+
+except() { # <except text>
+  echo "$1" > /dev/stderr
+  exit 2
+}
+
+install_config() { # <source> <dest>
+  [ -f "$2" ] || [[ "$force" != false ]] && return
+  echo "Installing $1..."
+  sudo -u "$user" cp -v "$1" "$2" || except "Error installing $1."
+}
 
 __doc__=(
   "must be run as superuser."
@@ -31,50 +45,60 @@ while [ "$#" -gt 0 ]; do
       enable=true
       shift 1
       ;;
-    --force)
-      force=true
-      shift 1
-      ;;
     -h)
       show_doc
-      exit 0
+      exit
       ;;
     *)
       show_doc
-      exit 0
+      exit 1
       ;;
   esac
 done
 
+# create user
+# ----------------------------------------------------------------------------------------
+create_user() {
+  echo "Creating $user user..."
+  useradd "$user"
+  echo "Set a password for $user:"
+  passwd "$user"
+}
+
+[[ $( awk '{print $1}' /etc/passwd | grep -c /etc/passwd ) -eq 0 ]] && create_user
+
+HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
+[ -d "$HOME" ] || except "Error with home directory."
+
 config="$HOME/.emprimt"
 mailbox="$config/primtbox"
+echo "Will install emprimt at $config."
+# ----------------------------------------------------------------------------------------
 
-setup_user() {
-  adduser --system "$user"
-  [[ "$enable" == "true" ]] && crontab -u "$user" - <<< "$interval" emprimt
-}
+# make directories
+# ----------------------------------------------------------------------------------------
+echo "Making directories..."
+mkdir -v --parents "$doc"
+sudo -u "$user" mkdir -v --parents "$config" "$mailbox"
+[ -d "$mailbox" ] || sudo -u "$user" maildirmake "$mailbox"
+chmod -v 700 "$mailbox"
+echo "Done."
+# ----------------------------------------------------------------------------------------
 
-setup_paths() {
-  mkdir -v --parents "$doc"
-  sudo -u "$user" mkdir -v --parents "$config"
-  [ ! -d "$mailbox" ] && sudo -u "$user" maildirmake "$mailbox"
-}
+# install user files
+# ----------------------------------------------------------------------------------------
+echo "Installing $user user files..."
+install_config ./sample_fetchmailrc "$HOME/.fetchmailrc"
+install_config ./mailfilter "$HOME/.mailfilter"
+chmod -v 700 "$HOME/.fetchmailrc" "$HOME/.mailfilter" || except "Error installing rcs."
+sudo -u "$user" touch "$config/printer" || except "Error creating printer list."
+echo "Done."
+# ----------------------------------------------------------------------------------------
 
-configure() {
-  cp -v ./mailfilter "$HOME/.mailfilter"
-  chown -v "$user" "$HOME/.mailfilter"
-  chmod -v 600 "$HOME/.mailfilter"
-
-  touch "$config/printers"
-}
-
-[[ $( awk '{print $1}' /etc/passwd | grep -c "$user" ) -eq 0 ]] && setup_user
-HOME=$( awk -F: '$1=="'$user'" {print $6}' /etc/passwd )
-[ ! -d "$HOME" ] && exit 2
-
-setup_paths
-
-if [ ! -f "$HOME/.mailfilter" ] || [ "$force" == "true" ]; then configure; fi
-
-cp -v ./doc "$doc/doc"
-install -vt "$bin" ./emprimt
+# install doc, bin
+# ----------------------------------------------------------------------------------------
+echo "Installing executable and doc..."
+cp -v ./doc "$doc/doc" || except "Error installing doc."
+install -vt "$bin" ./emprimt || except "Error installing executable."
+echo "Done."
+# ----------------------------------------------------------------------------------------
