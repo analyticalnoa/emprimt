@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[[ $( pgrep -c emprimt ) -eq 0 ]] || exit
+
 # args
 if [[ "$1" == "-h" ]]; then less /usr/share/doc/emprimt/doc; exit; fi
 verbose=false; [[ "$1" == "-v" ]] && verbose=true
