@@ -18,7 +18,9 @@ touch "$log" || echo "Error opening log file." > /dev/stderr
 # remove overlarge log
 [[ $( stat -c '%s' "$log" ) -ge "$log_max" ]] && rm "$log"
 
-ts() { date -Iseconds }
+ts() {
+  date -Iseconds
+}
 
 voluble_() { # [ -e <exitcode> ] <message> ...
   if [[ "$1" == "-e" ]]; then
