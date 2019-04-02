@@ -24,21 +24,20 @@ ts() {
 
 voluble_() { # [ -e <exitcode> ] <message> ...
   if [[ "$1" == "-e" ]]; then
+    e=true
     exitcode="$2"
-    out=/dev/stderr
     shift 2
   else
     exitcode=0
-    out=/dev/stdout
   fi
 
-  IFS= read -r stdinmsg
+  # IFS= read -r stdinmsg
 
-  printf "$( ts ) [$$]: %s\n" "$@" "$stdinmsg" >> "$log"
+  printf "$( ts ) [$$]: %s\n" "$@" >> "$log"
 
-  printf "%s\n" "$@" "$stdinmsg" > "$out"
+  [[ "$verbose" == true ]] && printf "%s\n" "$@" > /dev/stderr
 
-  [[ "$out" == "/dev/stderr" ]] && exit "$exitcode"
+  [[ "$e" == true ]] && exit "$exitcode"
 }
 
 voluble_ "Starting emprimt."
@@ -93,7 +92,7 @@ while IFS="" read -r printer; do
   # create cache
   cache="$mailbox/cache/$printer"
   mkdir --parents "$cache" \
-    || voluble_ -e 4 "Failed to create cache directory."
+    | voluble_ -e 4 "Failed to create cache directory."
 
   for f in "$mailbox/new/"*; do
     # verify path
@@ -142,8 +141,8 @@ if [[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]]; then
     [[ "$f" =~ ^"$mailbox/new/".*$ ]] \
       || voluble_ -e 4 "Bad path: $f."
 
-    rm -v "$f" \
-      | voluble_
+    voluble_ "Removing $f..."
+    rm -v "$f"
   done
 
   voluble_ "Done."
