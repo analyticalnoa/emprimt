@@ -8,7 +8,7 @@ verbose=false; [[ "$1" == "-v" ]] && verbose=true
 config="$HOME/.emprimt"
 mailbox="$config/primtbox"
 
-log=/var/log/emprimt.log
+log="$HOME/.emprimt.log"
 log_max=2000000 # bytes
 
 # verbosity and log
@@ -142,6 +142,7 @@ if [[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]]; then
 
     rm -v "$f" \
       | voluble_
+  done
 
   voluble_ "Done."
 fi
