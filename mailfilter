@@ -1,4 +1,6 @@
-if (/^Content\-Type: application\/pdf.*$/)
+if (/^Content\-Type: application\/pdf.*$/ \
+  && /^Content\-Type: application\/postscript.*$/ \
+  && /^Content\-Type: image\/.*$/ )
 {
   to "$HOME/.emprimt/primtbox"
 }
