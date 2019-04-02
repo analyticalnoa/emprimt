@@ -18,7 +18,7 @@ except() { # <except text>
 }
 
 install_config() { # <source> <dest>
-  [ -f "$2" ] || [[ "$force" == false ]] && return
+  [ -f "$2" ] && [[ "$force" != true ]] && return
   echo "Installing $1..."
   sudo -u "$user" cp -v "$1" "$2" || except "Error installing $1."
 }
