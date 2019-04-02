@@ -31,8 +31,6 @@ voluble_() { # [ -e <exitcode> ] <message> ...
     exitcode=0
   fi
 
-  # IFS= read -r stdinmsg
-
   printf "$( ts ) [$$]: %s\n" "$@" >> "$log"
 
   [[ "$verbose" == true ]] && printf "%s\n" "$@" > /dev/stderr
@@ -40,7 +38,7 @@ voluble_() { # [ -e <exitcode> ] <message> ...
   [[ "$e" == true ]] && exit "$exitcode"
 }
 
-voluble_ "Starting emprimt."
+voluble_ " " "Starting emprimt."
 # ----------------------------------------------------------------------------------------
 
 
@@ -92,7 +90,7 @@ while IFS="" read -r printer; do
   # create cache
   cache="$mailbox/cache/$printer"
   mkdir --parents "$cache" \
-    | voluble_ -e 4 "Failed to create cache directory."
+    || voluble_ -e 4 "Failed to create cache directory."
 
   for f in "$mailbox/new/"*; do
     # verify path
@@ -102,9 +100,9 @@ while IFS="" read -r printer; do
 
     # extract document
     if [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]]; then
-      voluble "Extracing documents from $( basename $f )..."
+      voluble_ "Extracing documents from $( basename $f )..."
       munpack -C "$cache" "$f" || voluble_ -e 5 "Failed to extract."
-      voluble_ "Removing message."
+      voluble_ "Removing message..."
       rm "$f" || voluble_ -e 5 "Failed to remove."
       voluble_ "Done."
     fi
@@ -148,3 +146,5 @@ if [[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]]; then
   voluble_ "Done."
 fi
 # ----------------------------------------------------------------------------------------
+
+voluble_ "Exiting emprimt."
