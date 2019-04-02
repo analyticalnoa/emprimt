@@ -99,7 +99,7 @@ while IFS="" read -r printer; do
       || voluble_ -e 4 "Bad path: $f."
 
     # extract document
-    if [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]]; then
+    if [[ $( grep -cie "^Subject:.*$printer.*$" "$f" ) -ne 0 ]]; then
       voluble_ "Extracing documents from $( basename $f )..."
       munpack -C "$cache" "$f" || voluble_ -e 5 "Failed to extract."
       voluble_ "Removing message..."
