@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[[ $( pgrep -c emprimt ) -eq 0 ]] || exit
+[[ $( pgrep -c emprimt ) -eq 0 ]] || exit 9
 
 # args
 if [[ "$1" == "-h" ]]; then less /usr/share/doc/emprimt/doc; exit; fi
