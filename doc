@@ -1,5 +1,5 @@
 NAME
-    emprimt - a simple email-to-print service.
+    emprimt - a little email-to-print service.
 
 SYNOPSIS
     emprimt -h
@@ -17,7 +17,7 @@ CONFIGURATION
 
         mda "maildrop"
 
-    IMPORTANT: Also filter messages by size so that you don't fill the disk. We've
+    IMPORTANT: Also filter messages by size so that you don't fill up the disk. We've
     included the line
 
         limit 20000000
@@ -34,7 +34,8 @@ CONFIGURATION
 
         ./install --enable
 
-    Edit the crontab if you'd like to change this frequency.
+    Edit the crontab if you'd like to change this frequency. Run `./install -h' for more
+    install options.
 
     The install script will create an empty file in `$HOME/.emprimt' called `printers'. In
     this file, list the names of the printers that emprimt can print to, one per line.
@@ -48,13 +49,15 @@ CONFIGURATION
 DESCRIPTION
     To use emprimt, simply run `emprimt' from the command line, as the emprimt user. The
     first form listed above will print this doc page in `less' and exit. The second form's
-    optional `-v' argument will increase verbosity.
+    optional `-v' argument will increase verbosity to /dev/stdout
 
-    emprimt prints any PDF documents attached to mail with a subject line that contains
-    a qualified printer name(s) appearing in the `$HOME/.emprimt/printers' file. The
-    attachment(s) will be printed to the subject-line-specified printer appearing first
-    on the printers list. Documents will be printed with the default printing options set
-    by CUPS.
+    emprimt prints any non-text documents attached to mail with a subject line that
+    contains a qualified printer name(s) appearing in the `$HOME/.emprimt/printers' file.
+    The attachment(s) will be printed to the subject-line-specified printer appearing
+    first on the printers list. Documents will be printed with the default printing
+    options set in CUPS.
+
+    emprimt logs to `$HOME/.emprimt.log'.
 
 DEPENDENCIES
     emprimt requires the following packages, available via your distribution's package
@@ -80,6 +83,9 @@ FILES
 
     - `$HOME/.mailfilter'
         The filter file for maildrop.
+
+    - `$HOME/.emprimt.log'
+        The log of emprimt.
 
     - `$HOME/.emprimt/primtbox/cache/<printer_name>'
         The temporary directory for extracted attachments while they're being printed.
