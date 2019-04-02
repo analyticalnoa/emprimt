@@ -4,6 +4,6 @@ set no bouncemail;
 
 poll imap.gmail.com proto imap service 993:
   username "user@gmail.com" password "your_password" is "emprimt":
-    keep ssl sslcertck sslproto TLS1;
+    no keep ssl sslcertck sslproto TLS1;
     limit 20000000;
     mda "maildrop";
