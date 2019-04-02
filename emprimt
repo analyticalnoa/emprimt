@@ -1,30 +1,77 @@
 #!/bin/bash
 
+# args
 if [[ "$1" == "-h" ]]; then less /usr/share/doc/emprimt/doc; exit; fi
+verbose=false; [[ "$1" == "-v" ]] && verbose=true
 
+# env
 config="$HOME/.emprimt"
 mailbox="$config/primtbox"
+
+log=/var/log/emprimt.log
+log_max=2000000 # bytes
+
+# verbosity and log
+# ----------------------------------------------------------------------------------------
+touch "$log" || echo "Error opening log file." > /dev/stderr
+
+# remove overlarge log
+[[ $( stat -c '%s' "$log" ) -ge "$log_max" ]] && rm "$log"
+
+ts() { date -Iseconds }
+
+voluble_() { # [ -e <exitcode> ] <message> ...
+  if [[ "$1" == "-e" ]]; then
+    exitcode="$2"
+    out=/dev/stderr
+    shift 2
+  else
+    exitcode=0
+    out=/dev/stdout
+  fi
+
+  IFS= read -r stdinmsg
+
+  printf "$( ts ) [$$]: %s\n" "$@" "$stdinmsg" >> "$log"
+
+  printf "%s\n" "$@" "$stdinmsg" > "$out"
+
+  [[ "$out" == "/dev/stderr" ]] && exit "$exitcode"
+}
+
+voluble_ "Starting emprimt."
+# ----------------------------------------------------------------------------------------
+
 
 # sanity checks
 # ----------------------------------------------------------------------------------------
 # fetchmailrc existnece and permissions
-[ ! -f "$HOME/.fetchmailrc" ] && exit 2
-[[ $( stat -c '%a' "$HOME/.fetchmailrc" ) -gt 700 ]] && exit 3
+[ ! -f "$HOME/.fetchmailrc" ] \
+  && voluble_ -e 2 "Failed to open ~/.fetchmailrc."
+[[ $( stat -c '%a' "$HOME/.fetchmailrc" ) -gt 700 ]] \
+  && voluble_ -e 3 "Unsafe permissions on ~/.fetchmailrc."
 
 # mailfilter existence and permissions
-[ ! -f "$HOME/.mailfilter" ] && exit 2
-[[ $( stat -c '%a' "$HOME/.mailfilter" ) -gt 700 ]] && exit 3
+[ ! -f "$HOME/.mailfilter" ] \
+  && voluble_ -e 2 "Failed to open ~/.mailfilter."
+[[ $( stat -c '%a' "$HOME/.mailfilter" ) -gt 700 ]] \
+  && voluble_ -e 3 "Unsafe permissions on ~/.mailfilter."
 
 # directory existence and permissions
-[ ! -d "$config" ] && exit 2
-[ ! -d "$mailbox" ] && exit 2
-[[ $( stat -c '%a' "$mailbox" ) -gt 700 ]] && exit 3
+[ ! -d "$config" ] \
+  && voluble_ -e 2 "Failed to open $config."
+[ ! -d "$mailbox" ] \
+  && voluble_ -e 2 "Failed to open $mailbox."
+[[ $( stat -c '%a' "$mailbox" ) -gt 700 ]] \
+  && voluble_ -e 3 "Unsafe permissions on $mailbox."
 
 # no printers to check
-[ ! $( wc -l .emprimt/priners | awk 'NR==1 {print $1}' ) -gt 0 ] && exit 1
+[ ! $( wc -l "$config/printers" | awk 'NR==1 {print $1}' ) -gt 0 ] \
+  && voluble_ -e 1 "No printers to check."
 
 # nothing to print
-[[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]] && exit 0
+[[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]] \
+  && voluble_ -e 0 "Nothing to print."
 # ----------------------------------------------------------------------------------------
 
 # fetchmail
@@ -35,30 +82,67 @@ fetchmail
 # main boi
 # ----------------------------------------------------------------------------------------
 while IFS="" read -r printer; do
+  voluble_ "Checking messages for printer $printer..."
+
   # unqualified printer
   [[ $( lpstat -p -d | awk '$1=="printer" {print $2}' | grep -c "$printer" ) -eq 0 ]] \
     && continue
 
   # create cache
   cache="$mailbox/cache/$printer"
-  mkdir --parents "$cache"
+  mkdir --parents "$cache" \
+    || voluble_ -e 4 "Failed to create cache directory."
 
   for f in "$mailbox/new/"*; do
     # verify path
     f=$( readlink -f "$f" )
-    [[ "$f" =~ ^"$mailbox/new/".*$ ]] & exit 4
+    [[ "$f" =~ ^"$mailbox/new/".*$ ]] \
+      || voluble_ -e 4 "Bad path: $f."
 
     # extract document
-    [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]] \
-      && munpack -C "$cache" "$f" \
-      && rm "$f"
+    if [[ $( grep -ce "^Subject:.*$printer.*$" "$f" ) -ne 0 ]]; then
+      voluble "Extracing documents from $( basename $f )..."
+      munpack -C "$cache" "$f" || voluble_ -e 5 "Failed to extract."
+      voluble_ "Removing message."
+      rm "$f" || voluble_ -e 5 "Failed to remove."
+      voluble_ "Done."
+    fi
+  done
+
+  if [[ $( ls -1 "$cache" | wc -l ) -eq 0 ]]; then
+    voluble_ "Nothing to print."
+    continue
+  fi
+
+  for f in "$cache/"*; do
+    # verify path
+    f=$( readlink -f "$f")
+    [[ "$f" =~ ^"$cache".*$ ]] \
+      || voluble_ -e 5 "Bad path: $f."
+
+    # print document
+    voluble_ "Printing $( basename $f )..."
+    lpr -P "$printer" "$f"
+    voluble_ "Done."
   done
 
   # clear cache
+  voluble_ "Clearing cache for $printer..."
   rm -r "$cache"
+  voluble_ "Done."
 done <"$config/printers"
 
 # clear unqualified messages
-[[ $( ls -1 "$mailbox/new" | wc -l ) -gt 0 ]] \
-  && rm "$mailbox/new/"*
+if [[ $( ls -1 "$mailbox/new" | wc -l ) -eq 0 ]]; then
+  voluble_ "Clearing unqualified messages..."
+
+  for f in "$mailbox/new/"*; do
+    [[ "$f" =~ ^"$mailbox/new/".*$ ]] \
+      || voluble_ -e 4 "Bad path: $f."
+
+    rm -v "$f" \
+      | voluble_
+
+  voluble_ "Done."
+fi
 # ----------------------------------------------------------------------------------------

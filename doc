@@ -3,7 +3,7 @@ NAME
 
 SYNOPSIS
     emprimt -h
-    emprimt
+    emprimt [ -v ]
 
 CONFIGURATION
     First see DEPENDENCIES. We assume you have already setup desired printers with CUPS.
@@ -46,7 +46,9 @@ CONFIGURATION
     emails get through to emprimt; see the maildroprc manpage for details.
 
 DESCRIPTION
-    To use emprimt, simply run `emprimt' from the command line, as the emprimt user.
+    To use emprimt, simply run `emprimt' from the command line, as the emprimt user. The
+    first form listed above will print this doc page in `less' and exit. The second form's
+    optional `-v' argument will increase verbosity.
 
     emprimt prints any PDF documents attached to mail with a subject line that contains
     a qualified printer name(s) appearing in the `$HOME/.emprimt/printers' file. The
