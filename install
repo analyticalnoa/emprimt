@@ -97,7 +97,7 @@ echo "Installing $user user files..."
 install_config ./sample_fetchmailrc "$HOME/.fetchmailrc"
 install_config ./mailfilter "$HOME/.mailfilter"
 chmod -v 600 "$HOME/.fetchmailrc" "$HOME/.mailfilter" || except "Error installing rcs."
-sudo -u "$user" touch "$config/printer" || except "Error creating printer list."
+sudo -u "$user" touch "$config/printers" || except "Error creating printer list."
 echo "Done."
 # ----------------------------------------------------------------------------------------
 
